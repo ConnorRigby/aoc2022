@@ -88,3 +88,137 @@ test "aoc day 1 part 1" {
     // try std.testing.expectEqual(@as(usize, 45000), highscore+highscore2+highscore3);
     try std.testing.expectEqual(@as(usize, 207456), highscore+highscore2+highscore3);
 }
+
+// const day2_part1_test_input = @embedFile("day2_part_1_sample.txt");
+const day2_part1_test_input = @embedFile("day2_part_1.txt");
+
+const P1 = enum(usize) {
+    rock = 0x41,
+    paper = 0x42,
+    scissors = 0x43
+};
+
+const P2 = enum(usize) {
+    // rock = 0x58,
+    // paper = 0x59,
+    // scissors = 0x5A
+    loss = 0x58,
+    draw = 0x59,
+    win = 0x5A,
+};
+
+const Game = struct {
+    p1: P1,
+    win: P1,
+    loss: P1,
+    draw: P1,
+    p2: P2,
+
+    pub fn init(p1: P1, p2: P2) Game {
+        var win: P1 = undefined;
+        var loss: P1 = undefined;
+        if(p1 == .rock) {
+            win = .paper;
+            loss = .scissors;
+        } else if(p1 == .paper) {
+            win = .scissors;
+            loss = .rock;
+        } else {
+            win = .rock;
+            loss = .paper;
+        }
+        return .{
+            .p1 = p1,
+            .p2 = p2,
+            .win = win,
+            .loss = loss,
+            .draw = p1
+        };
+    }
+
+    pub fn getscore(self: *const Game, in: P1) usize {
+        _ = self;
+        return switch(in) {
+            .rock => 1,
+            .paper => 2,
+            .scissors => 3
+        };
+    }
+
+    pub fn evaultate(self: *const Game) usize {
+        var score:usize = 0;
+
+        // part 1:
+        // if(self.p2 == .rock) {score = 1;}
+        // else if(self.p2 == .paper) {score = 2;}
+        // else if(self.p2 == .scissors) {score = 3;}
+
+        // // p2 win
+        // if(self.p2 == .rock and self.p1 == .scissors) { score += 6; }
+        // else if(self.p2 == .paper and self.p1 == .rock) { score += 6; }
+        // else if(self.p2 == .scissors and self.p1 == .paper) { score += 6; }
+
+        // // p2 loss
+        // else if(self.p1 == .rock and self.p2 == .scissors) { score += 0; }
+        // else if(self.p1 == .paper and self.p2 == .rock) { score += 0; }
+        // else if(self.p1 == .scissors and self.p2 == .paper) { score += 0; }
+
+        // draw
+        // else score += 3; 
+
+        switch(self.p2) {
+            .loss => {
+                score+=0;
+                score += self.getscore(self.loss);
+            },
+            .draw => {
+                score+=3;
+                score += self.getscore(self.p1);
+            },
+            .win => {
+                score+=6;
+                score += self.getscore(self.win);
+            }
+        }
+
+        // std.debug.print("{s} : {s} ({s}, {s}, {s}) = {d}\n", .{@tagName(self.p2), @tagName(self.p1), @tagName(self.win), @tagName(self.loss), @tagName(self.draw), score});
+        return score;
+    }
+};
+
+test "aoc day 2 part 1" {
+    std.debug.print("\n", .{});
+    var game: std.ArrayList(Game) = std.ArrayList(Game).init(std.testing.allocator);
+    defer game.deinit();
+
+    var tmp_buffer: []u8 = try std.testing.allocator.alloc(u8, 2);
+    defer std.testing.allocator.free(tmp_buffer);
+
+    var i: usize = 0;
+    var j: usize = 0;
+
+    // fill up the game states
+    while(i < day2_part1_test_input.len):(i += 1) {
+        if(day2_part1_test_input[i] == ' ') {continue;}
+        if(day2_part1_test_input[i] == '\n') {
+            try game.append(Game.init(
+                    @intToEnum(P1, tmp_buffer[0]), 
+                    @intToEnum(P2, tmp_buffer[1])
+                )
+            );
+            j = 0;
+            continue;
+        }
+        tmp_buffer[j] = day2_part1_test_input[i];
+        j+=1;
+    }
+
+    var scores:usize = 0;
+    var s = game.toOwnedSlice();
+    defer game.allocator.free(s);
+    for(s) | round | {
+        var round_score:usize = round.evaultate();
+        scores+=round_score;
+    }
+    std.debug.print("score={d} numrounds={d}\n", .{scores, s.len});
+}
