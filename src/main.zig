@@ -226,27 +226,66 @@ test "aoc day 2 part 1" {
 const day3_part1_test_input = @embedFile("day3_part_1.txt");
 // const day3_part1_test_input = @embedFile("day3_part_1_sample.txt");
 
+pub fn priority(common: usize) usize {
+    std.debug.assert(common > 65);
+    if(common > 96) return common - 96;
+    return (common - 64) + 26;
+}
+
+pub const find_common_error = error {
+    none
+};
+
+pub fn find_common(sacks: [3][]const u8) find_common_error!usize {
+    for(sacks[0]) |first_char| {
+        for(sacks[1]) |second_char| {
+            if(second_char == first_char) {
+                for(sacks[2]) |third_char| {
+                    if(third_char == second_char) return third_char;
+                }
+            }
+        }
+    }
+    return find_common_error.none;
+}
+
 test "aoc day 3 part 1" {
     std.debug.print("\n", .{});
-    // var rucksacks = std.AutoHashMap(u8, [2][])
-    var tmp_buffer: []u8 = try std.testing.allocator.alloc(u8, 255);
-    defer std.testing.allocator.free(tmp_buffer);
 
     var i: usize = 0;
     var line_length: usize = 0;
+    var line_count: usize = 0;
 
-    // var lines = std.ArrayList(u8).init(std.testing.allocator);
-    // defer lines.deinit();
+    var sacks = std.ArrayList([]const u8).init(std.testing.allocator);
+    defer sacks.deinit();
+
+    var groups = std.ArrayList([3][]const u8).init(std.testing.allocator);
+    defer groups.deinit();
 
     while(i < day3_part1_test_input.len):(i += 1) {
         if(day3_part1_test_input[i] == '\n') {
-            const half = line_length / 2;
-            var compartment_1 = day3_part1_test_input[0..half]
+            var start = i-line_length;
+            var end = start + line_length;
+
+            var all = day3_part1_test_input[start..end];
+            try sacks.append(all);
+            line_count+=1;
+            if((line_count % 3) == 0) {
+                try groups.append(.{sacks.items[line_count-3], sacks.items[line_count-2], sacks.items[line_count-1]});
+            }
             line_length = 0;
             continue;
         }
 
-        tmp_buffer[j] = day3_part1_test_input[i];
         line_length+=1;
     }
+    var s = groups.toOwnedSlice();
+    defer std.testing.allocator.free(s);
+    var count: usize = 0;
+    for(s) |group| {
+        const common = try find_common(group);
+        count += priority(common);
+    }
+
+    std.debug.print("common count = {d}\n", .{count});
 }
