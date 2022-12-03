@@ -222,3 +222,31 @@ test "aoc day 2 part 1" {
     }
     std.debug.print("score={d} numrounds={d}\n", .{scores, s.len});
 }
+
+const day3_part1_test_input = @embedFile("day3_part_1.txt");
+// const day3_part1_test_input = @embedFile("day3_part_1_sample.txt");
+
+test "aoc day 3 part 1" {
+    std.debug.print("\n", .{});
+    // var rucksacks = std.AutoHashMap(u8, [2][])
+    var tmp_buffer: []u8 = try std.testing.allocator.alloc(u8, 255);
+    defer std.testing.allocator.free(tmp_buffer);
+
+    var i: usize = 0;
+    var line_length: usize = 0;
+
+    // var lines = std.ArrayList(u8).init(std.testing.allocator);
+    // defer lines.deinit();
+
+    while(i < day3_part1_test_input.len):(i += 1) {
+        if(day3_part1_test_input[i] == '\n') {
+            const half = line_length / 2;
+            var compartment_1 = day3_part1_test_input[0..half]
+            line_length = 0;
+            continue;
+        }
+
+        tmp_buffer[j] = day3_part1_test_input[i];
+        line_length+=1;
+    }
+}
