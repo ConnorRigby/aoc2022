@@ -289,3 +289,22 @@ test "aoc day 3 part 1" {
 
     std.debug.print("common count = {d}\n", .{count});
 }
+
+// const day4_part1_test_input = @embedFile("day4_part_1.txt");
+const day4_part1_test_input = @embedFile("day4_part_1_sample.txt");
+
+test "aoc day 4 part 1" {
+    std.debug.print("\n", .{});
+
+    var i: usize = 0;
+    var line_length: usize = 0;
+    var line_count: usize = 0;
+
+    while(i < day4_part1_test_input.len):(i += 1) {
+        if(day3_part1_test_input[i] == '-') {
+            
+        }
+        if(day3_part1_test_input[i] == ',') {}
+        if(day3_part1_test_input[i] == '\n') {}
+    }
+}
